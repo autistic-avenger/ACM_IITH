@@ -15,6 +15,8 @@
 #include <algorithm>
 #include <array>
 
+using namespace std;
+
 // ============================================================
 //  LOOKUP TABLES  (do NOT modify)
 // ============================================================
@@ -159,27 +161,27 @@ static const int SBOX[8][4][16] = {
 
 // Convert a hexadecimal string to a binary string
 // e.g. "A" -> "1010"
-std::string hexToBinary(const std::string& hex) {
-    std::string binary;
+string hexToBinary(const string& hex) {
+    string binary;
     for (char c : hex) {
         int val = 0;
         if (c >= '0' && c <= '9')      val = c - '0';
         else if (c >= 'A' && c <= 'F') val = c - 'A' + 10;
         else if (c >= 'a' && c <= 'f') val = c - 'a' + 10;
-        binary += std::bitset<4>(val).to_string();
+        binary += bitset<4>(val).to_string();
     }
     return binary;
 }
 
 // Convert a binary string to a hexadecimal string
 // e.g. "1010" -> "A"
-std::string binaryToHex(const std::string& binary) {
-    std::string hex;
+string binaryToHex(const string& binary) {
+    string hex;
     for (size_t i = 0; i + 4 <= binary.size(); i += 4) {
-        std::bitset<4> bits(binary.substr(i, 4));
+        bitset<4> bits(binary.substr(i, 4));
         int val = static_cast<int>(bits.to_ulong());
-        std::ostringstream oss;
-        oss << std::uppercase << std::hex << val;
+        ostringstream oss;
+        oss << uppercase << hex << val;
         hex += oss.str();
     }
     return hex;
@@ -187,8 +189,8 @@ std::string binaryToHex(const std::string& binary) {
 
 // Apply a permutation table to a binary string
 // table entries are 1-indexed bit positions
-std::string permute(const std::string& input, const int* table, int tableSize) {
-    std::string output(tableSize, '0');
+string permute(const string& input, const int* table, int tableSize) {
+    string output(tableSize, '0');
     for (int i = 0; i < tableSize; ++i) {
         output[i] = input[table[i] - 1];
     }
@@ -196,8 +198,8 @@ std::string permute(const std::string& input, const int* table, int tableSize) {
 }
 
 // XOR two equal-length binary strings
-std::string xorStrings(const std::string& a, const std::string& b) {
-    std::string result(a.size(), '0');
+string xorStrings(const string& a, const string& b) {
+    string result(a.size(), '0');
     for (size_t i = 0; i < a.size(); ++i) {
         result[i] = ((a[i] - '0') ^ (b[i] - '0')) ? '1' : '0';
     }
@@ -205,7 +207,7 @@ std::string xorStrings(const std::string& a, const std::string& b) {
 }
 
 // Perform a left circular shift on a binary string by 'shifts' positions
-std::string leftShift(const std::string& bits, int shifts) {
+string leftShift(const string& bits, int shifts) {
     return bits.substr(shifts) + bits.substr(0, shifts);
 }
 
@@ -213,16 +215,16 @@ std::string leftShift(const std::string& bits, int shifts) {
 //  FUNCTION PROTOTYPES  (students implement the bodies below)
 // ============================================================
 
-std::vector<std::string> generateRoundKeys(const std::string& key);
+vector<string> generateRoundKeys(const string& key);
 
-std::string feistelFunction(const std::string& rightHalf,
-                             const std::string& roundKey);
+string feistelFunction(const string& rightHalf,
+                             const string& roundKey);
 
-std::string desEncrypt(const std::string& plaintext,
-                       const std::string& key);
+string desEncrypt(const string& plaintext,
+                       const string& key);
 
-std::string desDecrypt(const std::string& ciphertext,
-                       const std::string& key);
+string desDecrypt(const string& ciphertext,
+                       const string& key);
 
 // ============================================================
 //  STUDENT TODO SECTIONS
@@ -233,25 +235,25 @@ std::string desDecrypt(const std::string& ciphertext,
 // Input:  key — 16-character hex string (64 bits)
 // Output: vector of 16 binary strings, each 48 bits long
 // ------------------------------------------------------------
-std::vector<std::string> generateRoundKeys(const std::string& key) {
-    std::vector<std::string> roundKeys;
+vector<string> generateRoundKeys(const string& key) {
+    vector<string> roundKeys;
 
     // Convert hex key to 64-bit binary
-    std::string keyBin = hexToBinary(key);
+    string keyBin = hexToBinary(key);
 
     // TODO:
     // 1. Apply PC-1 permutation to keyBin (64 bits -> 56 bits)
     //    Use: permute(keyBin, PC1, 56)
-    std::string permutedKey = permute(keyBin,PC1,56);
+    string permutedKey = permute(keyBin,PC1,56);
     //
     // 2. Split the 56-bit result into two 28-bit halves C and D
     //    C = first 28 bits
     //    D = last  28 bits
     
 
-    std::string C = permutedKey.substr(0, 28);
+    string C = permutedKey.substr(0, 28);
 
-    std::string D = permutedKey.substr(28);
+    string D = permutedKey.substr(28);
     // 3. For each of the 16 rounds:
     //    a. Left-shift C by SHIFT_TABLE[round] positions using leftShift()
     //    b. Left-shift D by SHIFT_TABLE[round] positions using leftShift()
@@ -262,7 +264,7 @@ std::vector<std::string> generateRoundKeys(const std::string& key) {
     for (int round =0 ; round<16;++round){
         C = leftShift(C,SHIFT_TABLE[round]);
         D = leftShift(D,SHIFT_TABLE[round]);
-        std::string CD = C+D;
+        string CD = C+D;
         CD = permute(CD,PC2,48);
         roundKeys.push_back(CD);
     }
@@ -278,17 +280,17 @@ std::vector<std::string> generateRoundKeys(const std::string& key) {
 //         roundKey  — 48-bit binary string
 // Output: 32-bit binary string
 // ------------------------------------------------------------
-std::string feistelFunction(const std::string& rightHalf,
-                             const std::string& roundKey) {
+string feistelFunction(const string& rightHalf,
+                             const string& roundKey) {
     // TODO:
     // 1. Expansion permutation
     //    Expand rightHalf from 32 bits to 48 bits
     //    Use: permute(rightHalf, E, 48)
-    std::string expanded_right = permute(rightHalf,E,48);
+    string expanded_right = permute(rightHalf,E,48);
     // 2. XOR with round key
     //    XOR the 48-bit expanded block with roundKey
     //    Use: xorStrings(expanded, roundKey)
-    std::string xoredStrs =  xorStrings(expanded_right,roundKey);
+    string xoredStrs =  xorStrings(expanded_right,roundKey);
     // 3. S-box substitution
     //    Split the 48-bit XOR result into eight 6-bit groups
     //    For each group i (0..7):
@@ -297,20 +299,20 @@ std::string feistelFunction(const std::string& rightHalf,
     //      c. Look up SBOX[i][row][col]
     //      d. Convert the 4-bit result to a binary string
     //    Concatenate all eight 4-bit outputs -> 32-bit string
-    std::string output;
+    string output;
     for (int i = 0; i < 8; ++i) {
-        std::string block = xoredStrs.substr(i * 6, 6);
+        string block = xoredStrs.substr(i * 6, 6);
         int row_idx = (block[0] - '0') * 2 + (block[5] - '0');
-        int col_idx = std::stoi(block.substr(1, 4), nullptr, 2);
+        int col_idx = stoi(block.substr(1, 4), nullptr, 2);
         int sboxValue = SBOX[i][row_idx][col_idx];
-        output += std::bitset<4>(sboxValue).to_string();
+        output += bitset<4>(sboxValue).to_string();
     }
 
     // 4. P permutation
     //    Apply permutation P to the 32-bit S-box output
     //    Use: permute(sboxOutput, P, 32)
     //
-    std::string result = permute(output, P, 32);
+    string result = permute(output, P, 32);
     
     // Return the final 32-bit result
     return result;
@@ -322,25 +324,25 @@ std::string feistelFunction(const std::string& rightHalf,
 //         key       — 16-character hex string (64 bits)
 // Output: 16-character hex string ciphertext
 // ------------------------------------------------------------
-std::string desEncrypt(const std::string& plaintext,
-                       const std::string& key) {
+string desEncrypt(const string& plaintext,
+                       const string& key) {
     // TODO:
     // 1. Generate round keys
     //    Use: generateRoundKeys(key)
-    std::vector<std::string> roundKeys = generateRoundKeys(key);
+    vector<string> roundKeys = generateRoundKeys(key);
     // 2. Convert plaintext to 64-bit binary
     //    Use: hexToBinary(plaintext)
-    std::string cipherTextBin = hexToBinary(plaintext);
+    string cipherTextBin = hexToBinary(plaintext);
     // 3. Apply Initial Permutation (IP)
     //    Use: permute(cipherTextBin, IP, 64)
-    std::string initialIP = permute(cipherTextBin,IP,64);
+    string initialIP = permute(cipherTextBin,IP,64);
 
-    std::string L0 = initialIP.substr(0,32);
-    std::string R0 = initialIP.substr(32,64);
+    string L0 = initialIP.substr(0,32);
+    string R0 = initialIP.substr(32,64);
     
-    std::vector<std::string> L ;
+    vector<string> L ;
     L.push_back(L0);
-    std::vector<std::string> R ;
+    vector<string> R ;
     R.push_back(R0);
     // 5. Perform 16 Feistel rounds:
     //    For round i = 0 to 15:
@@ -349,19 +351,19 @@ std::string desEncrypt(const std::string& plaintext,
     //      c. L[i+1] = newL
     //      d. R[i+1] = newR
     for (int i = 0; i < 16; i++) {
-        std::string newL = R[i];
-        std::string newR = xorStrings(L[i],feistelFunction(R[i],roundKeys[i]));
+        string newL = R[i];
+        string newR = xorStrings(L[i],feistelFunction(R[i],roundKeys[i]));
         L.push_back(newL);
         R.push_back(newR);
     }
     // 6. Swap the final halves (concatenate R16 + L16)
-    std::string combined = R[16] + L[16];
+    string combined = R[16] + L[16];
     // 7. Apply Final Permutation (FP)
     //    Use: permute(combined, FP, 64)
-    std::string FinalP = permute(combined,FP,64);
+    string FinalP = permute(combined,FP,64);
     // 8. Convert binary result to hex
     //    Use: binaryToHex(result)
-    std::string ans_hex_str =  binaryToHex(FinalP);
+    string ans_hex_str =  binaryToHex(FinalP);
     // Return the hex ciphertext
 
     // Placeholder — replace with your implementation
@@ -374,8 +376,8 @@ std::string desEncrypt(const std::string& plaintext,
 //         key        — 16-character hex string (64 bits)
 // Output: 16-character hex string (recovered plaintext)
 // ------------------------------------------------------------
-std::string desDecrypt(const std::string& ciphertext,
-                       const std::string& key) {
+string desDecrypt(const string& ciphertext,
+                       const string& key) {
     // TODO:
     // Decryption is identical to encryption EXCEPT:
     //   the round keys are applied in REVERSE order
@@ -384,24 +386,24 @@ std::string desDecrypt(const std::string& ciphertext,
     //
     // Steps:
     // 1. Generate round keys using generateRoundKeys(key)
-    std::vector<std::string> roundKeys = generateRoundKeys(key);
-    // 2. Reverse the round key vector (use std::reverse or index backwards)
-    std::reverse(roundKeys.begin(), roundKeys.end());
+    vector<string> roundKeys = generateRoundKeys(key);
+    // 2. Reverse the round key vector (use reverse or index backwards)
+    reverse(roundKeys.begin(), roundKeys.end());
     // 3. Follow the same steps as desEncrypt() using the reversed keys
-        std::string cipherTextBin = hexToBinary(ciphertext);
+        string cipherTextBin = hexToBinary(ciphertext);
     // 3. Apply Initial Permutation (IP)
     //    Use: permute(cipherTextBin, IP, 64)
-    std::string initialIP = permute(cipherTextBin,IP,64);
+    string initialIP = permute(cipherTextBin,IP,64);
 
     // 4. Split the IP result into two 32-bit halves:
     //    L0 = first 32 bits
     //    R0 = last  32 bits
-    std::string L0 = initialIP.substr(0,32);
-    std::string R0 = initialIP.substr(32,64);
+    string L0 = initialIP.substr(0,32);
+    string R0 = initialIP.substr(32,64);
     
-    std::vector<std::string> L ;
+    vector<string> L ;
     L.push_back(L0);
-    std::vector<std::string> R ;
+    vector<string> R ;
     R.push_back(R0);
     // 5. Perform 16 Feistel rounds:
     //    For round i = 0 to 15:
@@ -410,19 +412,19 @@ std::string desDecrypt(const std::string& ciphertext,
     //      c. L[i+1] = newL
     //      d. R[i+1] = newR
     for (int i = 0; i < 16; i++) {
-        std::string newL = R[i];
-        std::string newR = xorStrings(L[i],feistelFunction(R[i],roundKeys[i]));
+        string newL = R[i];
+        string newR = xorStrings(L[i],feistelFunction(R[i],roundKeys[i]));
         L.push_back(newL);
         R.push_back(newR);
     }
     // 6. Swap the final halves (concatenate R16 + L16)
-    std::string combined = R[16] + L[16];
+    string combined = R[16] + L[16];
     // 7. Apply Final Permutation (FP)
     //    Use: permute(combined, FP, 64)
-    std::string FinalP = permute(combined,FP,64);
+    string FinalP = permute(combined,FP,64);
     // 8. Convert binary result to hex
     //    Use: binaryToHex(result)
-    std::string ans_hex_str =  binaryToHex(FinalP);
+    string ans_hex_str =  binaryToHex(FinalP);
     // Return the hex ciphertext
 
     // Placeholder — replace with your implementation
@@ -434,23 +436,23 @@ std::string desDecrypt(const std::string& ciphertext,
 //  MAIN — sample driver (do not modify)
 // ============================================================
 int main() {
-    std::string plaintext ;
-    std::string key ;
+    string plaintext ;
+    string key ;
 
-    std::cout << "Enter The Plaintext :";
-    std::cin >> plaintext;
-    std::cout << "Enter The Key :";
-    std::cin >> key;
+    cout << "Enter The Plaintext :";
+    cin >> plaintext;
+    cout << "Enter The Key :";
+    cin >> key;
 
-    std::cout << "\n===== DES Encryption/Decryption =====\n";
-    std::cout << "Plaintext : " << plaintext << "\n";
-    std::cout << "Key       : " << key       << "\n";
+    cout << "\n===== DES Encryption/Decryption =====\n";
+    cout << "Plaintext : " << plaintext << "\n";
+    cout << "Key       : " << key       << "\n";
 
-    std::string ciphertext = desEncrypt(plaintext, key);
-    std::cout << "Ciphertext: " << ciphertext << "\n";
+    string ciphertext = desEncrypt(plaintext, key);
+    cout << "Ciphertext: " << ciphertext << "\n";
 
-    std::string recovered = desDecrypt(ciphertext, key);
-    std::cout << "Recovered : " << recovered  << "\n";
+    string recovered = desDecrypt(ciphertext, key);
+    cout << "Recovered : " << recovered  << "\n";
 
     return 0;
 }
