@@ -434,10 +434,15 @@ std::string desDecrypt(const std::string& ciphertext,
 //  MAIN — sample driver (do not modify)
 // ============================================================
 int main() {
-    std::string plaintext = "3C5DB819C855949A";
-    std::string key       = "F00CC2F95843F8D7";
+    std::string plaintext ;
+    std::string key ;
 
-    std::cout << "===== DES Encryption/Decryption =====\n";
+    std::cout << "Enter The Plaintext :";
+    std::cin >> plaintext;
+    std::cout << "Enter The Key :";
+    std::cin >> key;
+
+    std::cout << "\n===== DES Encryption/Decryption =====\n";
     std::cout << "Plaintext : " << plaintext << "\n";
     std::cout << "Key       : " << key       << "\n";
 
