@@ -345,6 +345,11 @@ std::string desEncrypt(const std::string& plaintext,
     //    R0 = last  32 bits
     std::string L0 = initialIP.substr(0,32);
     std::string R0 = initialIP.substr(32,64);
+    
+    std::vector<std::string> L(16,"0") ;
+    L.push_back(L0);
+    std::vector<std::string> R(16,"0") ;
+    L.push_back(R0);
     // 5. Perform 16 Feistel rounds:
     //    For round i = 0 to 15:
     //      a. newL = R[i]
@@ -352,20 +357,24 @@ std::string desEncrypt(const std::string& plaintext,
     //      c. L[i+1] = newL
     //      d. R[i+1] = newR
     for (int i=0 ; i<16 ; i++){
-        
+        std::string newL = R[i];
+        std::string newR = xorStrings(L[i],feistelFunction(R[i],roundKeys[i]));
+        L[i+1] = newL;
+        R[i+1] = newR;
+
     }
     // 6. Swap the final halves (concatenate R16 + L16)
-    //
+    std::string combined = R[15]+L[15];
     // 7. Apply Final Permutation (FP)
     //    Use: permute(combined, FP, 64)
-    //
+    std::string FinalP = permute(combined,FP,64);
     // 8. Convert binary result to hex
     //    Use: binaryToHex(result)
-    //
+    std::string ans_hex_str =  binaryToHex(FinalP);
     // Return the hex ciphertext
 
     // Placeholder — replace with your implementation
-    return "0000000000000000";
+    return ans_hex_str ;
 }
 
 // ------------------------------------------------------------
