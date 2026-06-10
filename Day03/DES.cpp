@@ -330,14 +330,11 @@ std::string desEncrypt(const std::string& plaintext,
     std::vector<std::string> roundKeys = generateRoundKeys(key);
     // 2. Convert plaintext to 64-bit binary
     //    Use: hexToBinary(plaintext)
-    std::string plaintedxtBin = hexToBinary(plaintext);
+    std::string cipherTextBin = hexToBinary(plaintext);
     // 3. Apply Initial Permutation (IP)
-    //    Use: permute(plaintextBin, IP, 64)
-    std::string initialIP = permute(plaintedxtBin,IP,64);
+    //    Use: permute(cipherTextBin, IP, 64)
+    std::string initialIP = permute(cipherTextBin,IP,64);
 
-    // 4. Split the IP result into two 32-bit halves:
-    //    L0 = first 32 bits
-    //    R0 = last  32 bits
     std::string L0 = initialIP.substr(0,32);
     std::string R0 = initialIP.substr(32,64);
     
@@ -387,21 +384,58 @@ std::string desDecrypt(const std::string& ciphertext,
     //
     // Steps:
     // 1. Generate round keys using generateRoundKeys(key)
+    std::vector<std::string> roundKeys = generateRoundKeys(key);
     // 2. Reverse the round key vector (use std::reverse or index backwards)
+    std::reverse(roundKeys.begin(), roundKeys.end());
     // 3. Follow the same steps as desEncrypt() using the reversed keys
-    //
-    // Return the hex plaintext
+        std::string cipherTextBin = hexToBinary(ciphertext);
+    // 3. Apply Initial Permutation (IP)
+    //    Use: permute(cipherTextBin, IP, 64)
+    std::string initialIP = permute(cipherTextBin,IP,64);
+
+    // 4. Split the IP result into two 32-bit halves:
+    //    L0 = first 32 bits
+    //    R0 = last  32 bits
+    std::string L0 = initialIP.substr(0,32);
+    std::string R0 = initialIP.substr(32,64);
+    
+    std::vector<std::string> L ;
+    L.push_back(L0);
+    std::vector<std::string> R ;
+    R.push_back(R0);
+    // 5. Perform 16 Feistel rounds:
+    //    For round i = 0 to 15:
+    //      a. newL = R[i]
+    //      b. newR = XOR( L[i], feistelFunction(R[i], roundKeys[i]) )
+    //      c. L[i+1] = newL
+    //      d. R[i+1] = newR
+    for (int i = 0; i < 16; i++) {
+        std::string newL = R[i];
+        std::string newR = xorStrings(L[i],feistelFunction(R[i],roundKeys[i]));
+        L.push_back(newL);
+        R.push_back(newR);
+    }
+    // 6. Swap the final halves (concatenate R16 + L16)
+    std::string combined = R[16] + L[16];
+    // 7. Apply Final Permutation (FP)
+    //    Use: permute(combined, FP, 64)
+    std::string FinalP = permute(combined,FP,64);
+    // 8. Convert binary result to hex
+    //    Use: binaryToHex(result)
+    std::string ans_hex_str =  binaryToHex(FinalP);
+    // Return the hex ciphertext
 
     // Placeholder — replace with your implementation
-    return "0000000000000000";
+    return ans_hex_str ;
+
 }
 
 // ============================================================
 //  MAIN — sample driver (do not modify)
 // ============================================================
 int main() {
-    std::string plaintext = "4E6F772069732074";
-    std::string key       = "0123456789ABCDEF";
+    std::string plaintext = "9EE67EFD96EB2749";
+    std::string key       = "5875984548EB9626";
 
     std::cout << "===== DES Encryption/Decryption =====\n";
     std::cout << "Plaintext : " << plaintext << "\n";
@@ -410,8 +444,8 @@ int main() {
     std::string ciphertext = desEncrypt(plaintext, key);
     std::cout << "Ciphertext: " << ciphertext << "\n";
 
-    // std::string recovered = desDecrypt(ciphertext, key);
-    // std::cout << "Recovered : " << recovered  << "\n";
+    std::string recovered = desDecrypt(ciphertext, key);
+    std::cout << "Recovered : " << recovered  << "\n";
 
     return 0;
 }
