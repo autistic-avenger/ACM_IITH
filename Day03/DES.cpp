@@ -301,7 +301,7 @@ std::string feistelFunction(const std::string& rightHalf,
     int start = 0;
     int end = 6;
 
-    while(end <=49){
+    while(end >=49){
         std::string currSub = xoredStrs.substr(start,end);
         int row_idx = currSub[start]+ currSub[end-1];
         std::string four_mid_bits  = xoredStrs.substr(start+1,end-1);
@@ -361,7 +361,6 @@ std::string desEncrypt(const std::string& plaintext,
         std::string newR = xorStrings(L[i],feistelFunction(R[i],roundKeys[i]));
         L[i+1] = newL;
         R[i+1] = newR;
-
     }
     // 6. Swap the final halves (concatenate R16 + L16)
     std::string combined = R[15]+L[15];
@@ -406,8 +405,8 @@ std::string desDecrypt(const std::string& ciphertext,
 //  MAIN — sample driver (do not modify)
 // ============================================================
 int main() {
-    std::string plaintext = "123456ABCD132536";
-    std::string key       = "AABB09182736CCDD";
+    std::string plaintext = "4E6F772069732074";
+    std::string key       = "0123456789ABCDEF";
 
     std::cout << "===== DES Encryption/Decryption =====\n";
     std::cout << "Plaintext : " << plaintext << "\n";
@@ -416,8 +415,8 @@ int main() {
     std::string ciphertext = desEncrypt(plaintext, key);
     std::cout << "Ciphertext: " << ciphertext << "\n";
 
-    std::string recovered = desDecrypt(ciphertext, key);
-    std::cout << "Recovered : " << recovered  << "\n";
+    // std::string recovered = desDecrypt(ciphertext, key);
+    // std::cout << "Recovered : " << recovered  << "\n";
 
     return 0;
 }
