@@ -259,16 +259,16 @@ std::vector<std::string> generateRoundKeys(const std::string& key) {
     //    d. Apply PC-2 permutation to CD (56 bits -> 48 bits)
     //       Use: permute(CD, PC2, 48)
     //    e. Append the result to roundKeys
-    for (int round; round<16;round++){
-        std::string C_SHIFT = leftShift(C,SHIFT_TABLE[round]);
-        std::string D_SHIFT = leftShift(D,SHIFT_TABLE[round]);
-        std::string CD = C_SHIFT+ D_SHIFT;
+    for (int round =0 ; round<16;++round){
+        C = leftShift(C,SHIFT_TABLE[round]);
+        D = leftShift(D,SHIFT_TABLE[round]);
+        std::string CD = C+D;
+        CD = permute(CD,PC2,48);
         roundKeys.push_back(CD);
     }
+    
     //
     // 4. Return roundKeys (should contain exactly 16 strings of 48 bits each)
-
-    // Placeholder — replace with your implementation
     return roundKeys;
 }
 
@@ -297,25 +297,20 @@ std::string feistelFunction(const std::string& rightHalf,
     //      c. Look up SBOX[i][row][col]
     //      d. Convert the 4-bit result to a binary string
     //    Concatenate all eight 4-bit outputs -> 32-bit string
-    std::string output = "";
-    int start = 0;
-    int end = 6;
-
-    while(end >=49){
-        std::string currSub = xoredStrs.substr(start,end);
-        int row_idx = currSub[start]+ currSub[end-1];
-        std::string four_mid_bits  = xoredStrs.substr(start+1,end-1);
-        int col_idx  = std::stoi(four_mid_bits,nullptr,2);
-        int S_BOX = SBOX[start%6][row_idx][col_idx];
-        std::string binary = std::bitset<4>(S_BOX).to_string();    
-        output += binary;
-    };
+    std::string output;
+    for (int i = 0; i < 8; ++i) {
+        std::string block = xoredStrs.substr(i * 6, 6);
+        int row_idx = (block[0] - '0') * 2 + (block[5] - '0');
+        int col_idx = std::stoi(block.substr(1, 4), nullptr, 2);
+        int sboxValue = SBOX[i][row_idx][col_idx];
+        output += std::bitset<4>(sboxValue).to_string();
+    }
 
     // 4. P permutation
     //    Apply permutation P to the 32-bit S-box output
     //    Use: permute(sboxOutput, P, 32)
     //
-    std::string result = permute(output,P,32);
+    std::string result = permute(output, P, 32);
     
     // Return the final 32-bit result
     return result;
@@ -349,21 +344,21 @@ std::string desEncrypt(const std::string& plaintext,
     std::vector<std::string> L ;
     L.push_back(L0);
     std::vector<std::string> R ;
-    L.push_back(R0);
+    R.push_back(R0);
     // 5. Perform 16 Feistel rounds:
     //    For round i = 0 to 15:
     //      a. newL = R[i]
     //      b. newR = XOR( L[i], feistelFunction(R[i], roundKeys[i]) )
     //      c. L[i+1] = newL
     //      d. R[i+1] = newR
-    for (int i=0 ; i<16 ; i++){
+    for (int i = 0; i < 16; i++) {
         std::string newL = R[i];
         std::string newR = xorStrings(L[i],feistelFunction(R[i],roundKeys[i]));
         L.push_back(newL);
         R.push_back(newR);
     }
     // 6. Swap the final halves (concatenate R16 + L16)
-    std::string combined = R[15]+L[15];
+    std::string combined = R[16] + L[16];
     // 7. Apply Final Permutation (FP)
     //    Use: permute(combined, FP, 64)
     std::string FinalP = permute(combined,FP,64);
