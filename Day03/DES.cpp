@@ -346,9 +346,9 @@ std::string desEncrypt(const std::string& plaintext,
     std::string L0 = initialIP.substr(0,32);
     std::string R0 = initialIP.substr(32,64);
     
-    std::vector<std::string> L(16,"0") ;
+    std::vector<std::string> L ;
     L.push_back(L0);
-    std::vector<std::string> R(16,"0") ;
+    std::vector<std::string> R ;
     L.push_back(R0);
     // 5. Perform 16 Feistel rounds:
     //    For round i = 0 to 15:
@@ -359,8 +359,8 @@ std::string desEncrypt(const std::string& plaintext,
     for (int i=0 ; i<16 ; i++){
         std::string newL = R[i];
         std::string newR = xorStrings(L[i],feistelFunction(R[i],roundKeys[i]));
-        L[i+1] = newL;
-        R[i+1] = newR;
+        L.push_back(newL);
+        R.push_back(newR);
     }
     // 6. Swap the final halves (concatenate R16 + L16)
     std::string combined = R[15]+L[15];
