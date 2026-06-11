@@ -70,10 +70,6 @@ int extract_row(int input)
 
 int extract_col(int input)
 {
-    //101011
-    //010101
-    //011111
-    //001010
     return input>>1 & 0xF;
 }
 
@@ -98,8 +94,7 @@ int dot_product(int value, int mask, int num_bits)
 
 // Purpose : Build the full Linear Approximation Table for one S-Box.
 
-vector<vector<int>> compute_lat(const int sbox[4][16])
-{
+vector<vector<int>> compute_lat(const int sbox[4][16]){
     vector<vector<int>> lat(64, vector<int>(16, 0));
     for (int x = 0; x < 64; x++)
     {
