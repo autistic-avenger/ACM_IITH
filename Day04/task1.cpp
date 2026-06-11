@@ -60,14 +60,21 @@ const int WEAK_S_BOXES[8][4][16] = {
 
 int extract_row(int input)
 {
-
+    int first_bit  = (input>>5) &1;
+    int last_bit = input & 1;
+    int row_ = first_bit <<1 | last_bit;
+    return row_;
 }
 
 // Function 02: extract_col
 
 int extract_col(int input)
 {
-    // write your logic here
+    //101011
+    //010101
+    //011111
+    //001010
+    return input>>1 & 0xF;
 }
 
 // FUNCTION 3: dot_product (inner product mod 2)
@@ -77,10 +84,12 @@ int extract_col(int input)
 
 int dot_product(int value, int mask, int num_bits)
 {
+
+    int ttt = value &mask ;
     int result = 0;
     for (int i = 0; i < num_bits; ++i)
     {
-
+        result ^= (ttt>>i) & 1;
     }
     return result;
 }
@@ -91,30 +100,37 @@ int dot_product(int value, int mask, int num_bits)
 
 vector<vector<int>> compute_lat(const int sbox[4][16])
 {
-
     vector<vector<int>> lat(64, vector<int>(16, 0));
-    // Step 01: Iterate over all 64 possible 6-bit inputs X  and Look up S-Box output for this input X
+    for (int x = 0; x < 64; x++)
+    {
+        int row = extract_row(x);
+        int col = extract_col(x);
+        int sx = sbox[row][col];
+        for (int alpha = 0; alpha < 64; alpha++)
+        {
+            int left = dot_product(x, alpha, 6);
+            for (int beta = 0; beta < 16; beta++)
+            {
+                int right = dot_product(sx, beta, 4);
 
-    // code your logic for step 01
+                if (left == right)
+                {
+                    lat[alpha][beta]++;
+                }
+            }
+        }
+    }
 
-    // Step 2: For every input mask alpha and output mask beta,
-    //         test whether the linear approximation holds for this X
+    for (int alpha = 0; alpha < 64; alpha++)
+    {
+        for (int beta = 0; beta < 16; beta++)
+        {
+            lat[alpha][beta] -= 32;
+        }
+    }
 
-    // STEP 2.1: Compute left side of approximation: alpha · X  (1 bit) FOR EVERY ALPHA
-
-    // WRITE YOUR LOGIC FOR STEP 2.1
-
-    // STEP: 2.2 Compute right side: beta · S(X)  (1 bit) for every beta
-
-    // WRITE YOUR LOGIC FOR STEP 2.2
-
-    // STP 2.3: Approximation holds when both parities match
-    // Increment count; we subtract 32 after the full loop
-
-    // WRITE YOUR LOGIC FOR STEP 2.3
-
+    return lat;
 }
-
 
 // STEP 03: Convert raw counts to biases: bias = count - 32
 // After this, the trivial entry lat[0][0] becomes +32 (was 64).
@@ -128,15 +144,33 @@ vector<vector<int>> compute_lat(const int sbox[4][16])
 // Purpose : Search the LAT for the strongest (non-trivial) linear
 //           approximation and report its location and value.
 int find_max_bias(const vector<vector<int>> &lat,
-                  int &best_alpha, int &best_beta)
+                  int &best_alpha,
+                  int &best_beta)
 {
     int max_abs_bias = 0;
+
     best_alpha = 0;
     best_beta = 0;
 
-    // WRITE YOUR LOGIC HERE
+    for (int alpha = 0; alpha < 64; alpha++)
+    {
+        for (int beta = 0; beta < 16; beta++)
+        {
+            if (alpha == 0 && beta == 0)
+                continue;
+
+            if (abs(lat[alpha][beta]) > max_abs_bias)
+            {
+                max_abs_bias = abs(lat[alpha][beta]);
+
+                best_alpha = alpha;
+                best_beta = beta;
+            }
+        }
+    }
     return max_abs_bias;
 }
+
 
 // FUNCTION 6: print_lat_table
 
